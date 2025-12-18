@@ -153,7 +153,18 @@ export default {
         },
         timeout: 30000,
       };
-      this.agoraVideo = new LivePlayer(playerOptions);
+      try {
+        this.agoraVideo = new LivePlayer(playerOptions);
+
+        if ("sessionId" in this.agoraVideo) {
+          // 这个 sessionId 和 USER_ASSIGNED 一起报给我们，查问题更准
+          console.log(this.agoraVideo.sessionId, "声网播放器-sessionId");
+        }
+      } catch (error) {
+        // 补充一些 异常捕捉逻辑
+        console.error(error, "声网播放器-初始化失败");
+        throw error;
+      }
       this.aegisInfoAll(
         "声网播放器-初始化成功",
         {
