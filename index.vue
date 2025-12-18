@@ -1,9 +1,10 @@
 <template>
   <view class="sw-player-wrap">
-    <view :class="{
+    <view
+      :class="{
         'agora-player': true,
         'vertical-player-wrap': liveInfo.isVertical == VERTICAL,
-        'horizontal-player-wrap': liveInfo.isVertical == HORIZONTAL
+        'horizontal-player-wrap': liveInfo.isVertical == HORIZONTAL,
       }"
     >
       <view class="sheng-wang" id="video-agora"></view>
@@ -11,9 +12,12 @@
       <view class="sw-loading" v-if="isShowLoadingIcon"></view>
 
       <!-- 在线人数 -->
-			<view v-if="visitorCount > 0 && liveInfo.iscloseOnlineNumber == 1" class="online-number">
-				<text>{{ visitorCount }}在看</text>
-			</view>
+      <view
+        v-if="visitorCount > 0 && liveInfo.iscloseOnlineNumber == 1"
+        class="online-number"
+      >
+        <text>{{ visitorCount }}在看</text>
+      </view>
 
       <!-- 会员ID -->
       <view class="member-id" v-if="!isFullScreen && memberIdSwitch">
@@ -21,27 +25,27 @@
       </view>
 
       <!-- 遮罩层、错误提示 -->
-      <view class="mask-toast-info" v-watermark="{ text: watermarkText, isFullScreen: isFullScreen }">
+      <view
+        class="mask-toast-info"
+        v-watermark="{ text: watermarkText, isFullScreen: isFullScreen }"
+      >
         <view v-if="iShowToastInfo" class="toast-info">
-					<view class="error-text">
-						<text>{{ errorPlayText }}</text>
-					</view>
-				</view>
+          <view class="error-text">
+            <text>{{ errorPlayText }}</text>
+          </view>
+        </view>
       </view>
       <!-- 播放按钮 -->
-      <view v-if="showBtn" class="play-btn"  @click="startPlay">
-        <image
-          class="play-btn-img"
-          src="@/static/icon/play1.png"
-        />
+      <view v-if="showBtn" class="play-btn" @click="startPlay">
+        <image class="play-btn-img" src="@/static/icon/play1.png" />
       </view>
     </view>
   </view>
 </template>
 <script>
-import { HORIZONTAL, VERTICAL } from '@/config/constants';
-import { getRandomRange } from '@/config/utils';
-import aegisLiveView from '@/mixins/aegisLiveView';   
+import { HORIZONTAL, VERTICAL } from "@/config/constants";
+import { getRandomRange } from "@/config/utils";
+import aegisLiveView from "@/mixins/aegisLiveView";
 import {
   LivePlayer,
   PlayerEvent,
@@ -54,57 +58,57 @@ export default {
   mixins: [aegisLiveView],
   props: {
     liveInfo: {
-			type: Object,
-			default: {}
-		},
-		merchantId: {
-			type: [String, Number],
-			default: null
-		},
-		liveId: {
-			type: [String, Number],
-			default: null
-		},
-		visitorCount: {
-			type: [String, Number],
-			default: 0
-		},
-		member: {
-			type: Object,
-			default: {}
-		},
-		adaptionPlan: {
-			type: [String, Number],
-			default: 1
-		},
-		coverShow: {
-			type: Boolean,
-			default: true
-		},
+      type: Object,
+      default: {},
+    },
+    merchantId: {
+      type: [String, Number],
+      default: null,
+    },
+    liveId: {
+      type: [String, Number],
+      default: null,
+    },
+    visitorCount: {
+      type: [String, Number],
+      default: 0,
+    },
+    member: {
+      type: Object,
+      default: {},
+    },
+    adaptionPlan: {
+      type: [String, Number],
+      default: 1,
+    },
+    coverShow: {
+      type: Boolean,
+      default: true,
+    },
     watermarkText: {
-			type: String,
-			default: ''
-		},
-		isFullScreen: {
-			type: Boolean,
-			default: false
-		},
+      type: String,
+      default: "",
+    },
+    isFullScreen: {
+      type: Boolean,
+      default: false,
+    },
     memberIdSwitch: {
-			type: [String, Number],
-			default: 0
-		},
+      type: [String, Number],
+      default: 0,
+    },
   },
   data() {
     return {
       HORIZONTAL, // 横屏--常量
-			VERTICAL, // 竖屏--常量
+      VERTICAL, // 竖屏--常量
       isShowLoadingIcon: true, // 是否显示加载Icon
       agoraVideo: null, // 声网播放器
       iShowToastInfo: false, // 是否显示提示文案
       errorPlayText: "主播离开一会，请稍后~", // 错误文案信息
       timer: null,
       showBtn: false, // 是否显示播放按钮
-    }
+    };
   },
   methods: {
     // 创建声网播放器
@@ -118,39 +122,46 @@ export default {
       setRTCParameter("ENABLE_INSTANT_VIDEO", true);
       setRTCParameter("ENABLE_PRE_SUB", true);
       // 1. 用dom创建video标签  2. uniapp会把原生video标签编译为uni-video
-			const video = document.createElement("video");
-			video.setAttribute("id", `remote-video`);
-			video.setAttribute("playsinline", true);
-			video.setAttribute("webkit-playsinline", true);
+      const video = document.createElement("video");
+      video.setAttribute("id", `remote-video`);
+      video.setAttribute("playsinline", true);
+      video.setAttribute("webkit-playsinline", true);
       // video.setAttribute("poster", this.liveInfo.coverUrl);
-      video.setAttribute("style", `background-image: url(${this.liveInfo.coverUrl})`)
-			const videoAgora = document.getElementById("video-agora");
-			videoAgora.appendChild(video);
+      video.setAttribute(
+        "style",
+        `background-image: url(${this.liveInfo.coverUrl})`
+      );
+      const videoAgora = document.getElementById("video-agora");
+      videoAgora.appendChild(video);
       // 播放器参数配置
       const url = this.liveInfo.pullUrl.replace("&uid=", "");
-      console.log(url, 'agora-url参数调整')
+      console.log(url, "agora-url参数调整");
       const playerOptions = {
         url,
         el: "remote-video",
         width: uni.getSystemInfoSync().windowWidth,
-				height: videoAgora.offsetHeight,
+        height: videoAgora.offsetHeight,
         aspectRatio: "16/9",
         autoSwitchHLS: true,
         autoplay: false,
         mirror: false,
-        objectFit: `${this.adaptionPlan == 2 ? 'cover' : 'fill'}`,
+        objectFit: `${this.adaptionPlan == 2 ? "cover" : "fill"}`,
         hlsConfig: {
           maxBufferLength: 40,
-				  maxBufferSize: 8 * 1000 * 1000,
-				  maxMaxBufferLength: 700,
+          maxBufferSize: 8 * 1000 * 1000,
+          maxMaxBufferLength: 700,
         },
-        timeout: 30000
-      }
-      this.agoraVideo = new LivePlayer(playerOptions); 
-      this.aegisInfoAll('声网播放器-初始化成功', {
-        ['url信息']: url,
-      }, this.member.memberId);
-      console.log(this.agoraVideo, "声网播放器"); 
+        timeout: 30000,
+      };
+      this.agoraVideo = new LivePlayer(playerOptions);
+      this.aegisInfoAll(
+        "声网播放器-初始化成功",
+        {
+          ["url信息"]: url,
+        },
+        this.member.memberId
+      );
+      console.log(this.agoraVideo, "声网播放器");
       // 网络状态
       this.agoraVideo.on(PlayerEvent.NETWORK_QUALITY, (e) => {
         // console.log(e, "声网网络状态");
@@ -158,9 +169,13 @@ export default {
       // 分配的 uid 发生变化
       this.agoraVideo.on(PlayerEvent.USER_ASSIGNED, (e) => {
         console.log(e, "声网播放器-分配的uid");
-        this.aegisInfoAll('声网播放器-分配的uid', {
-          ['声网uid']: e,
-        }, this.member.memberId);
+        this.aegisInfoAll(
+          "声网播放器-分配的uid",
+          {
+            ["声网uid"]: e,
+          },
+          this.member.memberId
+        );
       });
 
       // 播放器状态
@@ -178,8 +193,8 @@ export default {
         if (e.state == "unpublished") {
           console.log("主播已离开");
           // 判断如果停止播放，则检查直播状态 采用随机4-6s调用
-          const random = getRandomRange(4000, 6000) // 随机数
-          clearTimeout(this.timer)
+          const random = getRandomRange(4000, 6000); // 随机数
+          clearTimeout(this.timer);
           this.timer = setTimeout(() => {
             this.$emit("reloadObsLive", "videoError");
           }, random);
@@ -194,8 +209,8 @@ export default {
       // rtc频道内当前播放的媒体源发生变化
       this.agoraVideo.on(PlayerEvent.RTC_MEDIA_CHANGED, (e) => {
         // 媒体源发生变化
-        this.$emit('mediaChanged', e.state)
-        if(e.state == "playing") {
+        this.$emit("mediaChanged", e.state);
+        if (e.state == "playing") {
           this.iShowToastInfo = false;
           this.showBtn = false; // 隐藏播放按钮
         }
@@ -209,18 +224,32 @@ export default {
 
       // 播放器切换视频源（如从 RTC 切换到 HLS）成功后，触发该事件
       this.agoraVideo.on(PlayerEvent.MEDIA_SOURCE_CHANGED, (e) => {
-        console.log(e, "声网播放器切换视频源（如从 RTC 切换到 HLS）成功后，触发该事件")
-        this.aegisInfoAll('声网视频--播放器切换视频源（如从 RTC 切换到 HLS）成功', {
-          ['错误信息']: e,
-        }, this.member.memberId);
+        console.log(
+          e,
+          "声网播放器切换视频源（如从 RTC 切换到 HLS）成功后，触发该事件"
+        );
+        this.aegisInfoAll(
+          "声网视频--播放器切换视频源（如从 RTC 切换到 HLS）成功",
+          {
+            ["错误信息"]: e,
+          },
+          this.member.memberId
+        );
       });
 
       // 视频源出现不可恢复的错误，一旦触发需要切换视频源。如从 RTC 切换到 HLS
       this.agoraVideo.on(PlayerEvent.REQUEST_SWITCH_MEDIA_SOURCE, (e) => {
-        console.log(e, "视频源出现不可恢复的错误，一旦触发需要切换视频源。如从 RTC 切换到 HLS")
-        this.aegisInfoAll('声网视频--视频源出现不可恢复的错误', {
-          ['错误信息']: e,
-        }, this.member.memberId);
+        console.log(
+          e,
+          "视频源出现不可恢复的错误，一旦触发需要切换视频源。如从 RTC 切换到 HLS"
+        );
+        this.aegisInfoAll(
+          "声网视频--视频源出现不可恢复的错误",
+          {
+            ["错误信息"]: e,
+          },
+          this.member.memberId
+        );
       });
 
       // 播放器错误
@@ -229,26 +258,30 @@ export default {
         console.log(e, "声网播放器错误");
         this.iShowToastInfo = true;
         this.errorPlayText = "主播离开一会，请稍后~";
-        if(e.error.code === 'TIMEOUT') {
+        if (e.error.code === "TIMEOUT") {
           // TODO TIMEOUT 30s传递自定义事件 需要排查断流哪一刻是否会触发对应事件
           this.$emit("reloadObsLive", "videoError");
         }
-        this.aegisInfoAll('声网视频--播放器错误', {
-          ['错误信息']: e,
-        }, this.member.memberId);
+        this.aegisInfoAll(
+          "声网视频--播放器错误",
+          {
+            ["错误信息"]: e,
+          },
+          this.member.memberId
+        );
       });
       // 自动播放失败 手动触发不会触发
       this.agoraVideo.on(PlayerEvent.AUTOPLAY_PREVENTED, (e) => {
-        console.log(e, "视频自动播放失败")
+        console.log(e, "视频自动播放失败");
         this.agoraVideo.pause().then(() => {
-          console.log('我被暂停了------------')
-          this.showBtn = true
-          this.isShowLoadingIcon = false
-        })
+          console.log("我被暂停了------------");
+          this.showBtn = true;
+          this.isShowLoadingIcon = false;
+        });
       });
     },
-    startPlay() { 
-      if(!this.agoraVideo) return
+    startPlay() {
+      if (!this.agoraVideo) return;
       console.log(this.agoraVideo, "触发声网播放事件");
       this.agoraVideo.play();
       this.showBtn = false; // 隐藏播放按钮
@@ -260,8 +293,8 @@ export default {
       await this.agoraVideo.destroy();
       this.agoraVideo = null;
     },
-  }
-}
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -271,15 +304,15 @@ export default {
     transform: rotate(0);
   }
   100% {
-    -webkit-transform: rotate(360deg); 
-    transform: rotate(360deg)
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
   }
 }
 @keyframes loadingagora {
-  0% { 
+  0% {
     -webkit-transform: rotate(0);
     transform: rotate(0);
-  } 
+  }
   100% {
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
@@ -328,7 +361,7 @@ export default {
       margin: -50rpx 0 0 -50rpx;
       text-indent: -9999em;
       border-radius: 50%;
-      border: 6rpx solid rgba(255,255,255,0);
+      border: 6rpx solid rgba(255, 255, 255, 0);
       border-left-color: #fff;
       border-right-color: #fff;
       -webkit-transform: translateZ(0);
@@ -346,7 +379,7 @@ export default {
       border-radius: 8rpx;
       color: #fff;
       font-size: 24rpx;
-      background: rgba(0,0,0, 0.5);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 11;
     }
 
@@ -359,7 +392,7 @@ export default {
       color: #fff;
       border-radius: 8rpx;
       padding: 8rpx 16rpx;
-      background: rgba(0,0,0, 0.5);
+      background: rgba(0, 0, 0, 0.5);
     }
 
     .mask-toast-info {
@@ -383,7 +416,7 @@ export default {
           color: #fff;
         }
       }
-    } 
+    }
     .play-btn {
       position: absolute;
       left: 0;
@@ -405,13 +438,13 @@ export default {
 
 // 横屏模式下的全屏
 .fullScreen-layout {
-	.sw-player-wrap {
-		width: 100vw;
+  .sw-player-wrap {
+    width: 100vw;
     height: 100vh;
-		/deep/ .agora-player {
-			position: relative;
-      
-			.sheng-wang {
+    /deep/ .agora-player {
+      position: relative;
+
+      .sheng-wang {
         height: 100vh;
         #remote-video {
           position: absolute;
@@ -428,28 +461,28 @@ export default {
       }
 
       .online-number {
-				top: 20rpx;
-				left: calc(100vw - 36rpx);
-				transform: translate(0, 0) rotate(90deg);
-				transform-origin: 0 0;
-				width: max-content;
-			}
+        top: 20rpx;
+        left: calc(100vw - 36rpx);
+        transform: translate(0, 0) rotate(90deg);
+        transform-origin: 0 0;
+        width: max-content;
+      }
 
       .mask-toast-info {
         width: 100vw;
-				height: 100vh !important;
+        height: 100vh !important;
         .toast-info {
-					.error-text {
-						transform: rotate(90deg);
-					}
-				}
-      } 
+          .error-text {
+            transform: rotate(90deg);
+          }
+        }
+      }
       .play-btn {
         .play-btn-img {
           transform: rotate(90deg);
         }
       }
-		}
-	}
+    }
+  }
 }
 </style>
